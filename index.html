@@ -62,6 +62,10 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
 .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 .qa button{border:1px solid var(--ln);background:#fff;border-radius:12px;padding:10px 4px;font:inherit;font-size:12px;color:var(--tx);cursor:pointer;transition:transform .12s}
 .qa button:active{transform:scale(.94)}.qa b{display:block;font-size:22px;font-weight:400}
+.md{position:fixed;inset:0;background:rgba(23,48,31,.45);display:none;place-items:center;z-index:20;padding:16px}.md.on{display:grid}
+.sh{background:#fff;border-radius:6px 24px 6px 24px;padding:20px;width:100%;max-width:360px;max-height:90vh;overflow:auto}
+.sh pre{margin:0;font:13px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap}
+@media print{body.sk #app{display:none!important}.md.on{position:static;background:none;display:block}}
 .dk{display:none}
 @media(min-width:800px){
  nav button.dk{display:flex}nav button.dk:first-of-type{margin-top:auto}
@@ -124,10 +128,11 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
   <form class="af" onsubmit="kirim(event)"><input id="ai" placeholder="Tanya atau beri perintah..." autocomplete="off"><button type="button" class="btn ghost" onclick="mic()" aria-label="Bicara">🎤</button><button class="btn">Kirim</button></form>
  </div>
 </div>
+<div id="md" class="md" onclick="if(event.target==this)tutup()"></div>
 <div id="t"></div>
 <script>
 // Tempel URL Web App dari Apps Script di sini (Deploy > Manage deployments)
-const API = 'https://script.google.com/macros/s/AKfycbxLA4D6tXw0SHL3TEbpEd6k73jrLhjvP3GZ-2qK2oXDwCGlvM6nw5T_w3T-JvmdG3rK/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwkGm7NxwuR6zPDwnQXdXxa_raZDlqdyZodEjw_eB8Rnw3AGlelhFB_pcCm53-mHhdT/exec';
 
 const $ = s => document.querySelector(s);
 const rp = n => (n < 0 ? '-' : '') + 'Rp ' + Math.abs(Math.round(+n || 0)).toLocaleString('id-ID');
@@ -140,7 +145,7 @@ async function load() {
   try {
     const j = await (await fetch(API + '?pin=' + encodeURIComponent(pin))).json();
     if (j.error) { logout(); toast(j.error); return; }
-    D = j; document.body.classList.add('in'); render();
+    D = { Simpanan: [], Opname: [], ...j }; document.body.classList.add('in'); render();
   } catch (e) { toast('Gagal memuat data. Periksa URL Apps Script dan koneksi.'); }
 }
 async function post(b) {
@@ -193,7 +198,7 @@ function home() {
   <div class="card"><small>Jumlah barang</small><b>${D.Barang.length}</b></div></div>
   <h3>Penjualan 7 hari terakhir</h3><div class="card"><div class="chart">${wk.map(w => `<div onclick="toast('Tgl ${w[0]}: ${rp(w[1])}')"><i data-h="${w[1] / mx * 100}"></i>${w[0]}</div>`).join('')}</div></div>
   <h3>Stok menipis</h3><div class="card">${low.map(b => li(b.nama, 'Minimum ' + b.stokMin, b.stok + ' ' + b.satuan, '', '', 'neg')).join('') || '<p class="mu">Semua stok aman.</p>'}</div>
-  <h3>Penjualan terakhir</h3><div class="card">${hist('Penjualan').split('</div></div>').slice(0, 5).join('</div></div>')}</div>`;
+  <h3>Penjualan terakhir</h3><div class="card">${histJ(5)}</div>`;
 }
 let q = '', dq = '', lp = '';
 const tiles = () => D.Barang.filter(b => b.nama.toLowerCase().includes(q.toLowerCase())).map(b => {
@@ -224,7 +229,7 @@ function jual() {
   <input class="w" type="search" placeholder="Cari barang..." value="${q}" oninput="fq(this.value)"></div>
   <div class="tiles" id="tl">${tiles()}</div></div>
   <div class="card"><div id="ct">${cartHtml()}</div><button class="btn" style="width:100%" onclick="saveJual()">Simpan penjualan</button></div>
-  <h3>Riwayat terbaru</h3><div class="card">${hist('Penjualan')}</div>`;
+  <h3>Riwayat terbaru</h3><div class="card">${histJ()}</div>`;
 }
 function pp() {
   const o = {};
@@ -239,7 +244,7 @@ async function lunasI(i) {
 async function saveJual() {
   if (!cart.length) return toast('Keranjang masih kosong');
   if (jf.metode == 'Utang' && !jf.pembeli) return toast('Isi nama pembeli untuk penjualan utang');
-  if (await post({ action: 'jual', tanggal: jf.tanggal, pembeli: jf.pembeli || 'Umum', metode: jf.metode, items: cart.map(x => ({ barangId: x.id, qty: x.qty, harga: x.harga })) })) { cart = []; jf.pembeli = ''; render(); }
+  if (await post({ action: 'jual', tanggal: jf.tanggal, pembeli: jf.pembeli || 'Umum', metode: jf.metode, items: cart.map(x => ({ barangId: x.id, qty: x.qty, harga: x.harga })) })) { cart = []; jf.pembeli = ''; render(); struk(D.Penjualan[D.Penjualan.length - 1].nota); }
 }
 function beli() {
   return `<h2>Pembelian</h2><form class="card fm" onsubmit="sub(event,'beli')">
@@ -271,8 +276,10 @@ const dlist = () => D[tab].filter(x => x.nama.toLowerCase().includes(dq.toLowerC
   : li(x.nama, [x.kelas, x.telp].filter(Boolean).join(', ') || '-', '', `ed('${x.id}')`, 'Ubah')).join('') || '<p class="mu">Tidak ada data.</p>';
 const fd = v => { dq = v; $('#dl').innerHTML = dlist(); };
 function data() {
+  if (tab == 'Simpanan') return simp();
+  if (tab == 'Opname') return opn();
   const e = edit.id ? edit : {};
-  return `<h2>Data</h2><div class="tabs">${['Barang', 'Anggota'].map(t => `<button class="btn ${t == tab ? '' : 'ghost'}" onclick="tab='${t}';edit={};dq='';render()">${t}</button>`).join('')}</div>
+  return tabsH() + `
   <form class="card fm" onsubmit="sub(event,'data')"><input type="hidden" name="id" value="${e.id || ''}">
   ${FL[tab].map(f => field(f[0], f[1], f[2] || 'text', e[f[0]] ?? f[3] ?? '', f[0] == 'nama' ? 'required' : '')).join('')}
   <button class="btn w">${e.id ? 'Simpan perubahan' : 'Tambah ' + tab.toLowerCase()}</button>
@@ -289,6 +296,7 @@ function lap() {
   <div class="card">${row('Pembelian barang', m.beli)}${row('Kas masuk lain', m.km)}${row('Kas keluar', m.kk)}${row('Saldo kas (semua periode)', A.saldo, 1)}${row('Piutang belum lunas', A.piutang)}</div>
   <h3>Piutang per pembeli</h3><div class="card">${pp().map(([n, v], i) => li(n, 'Belum lunas', rp(v), `lunasI(${i})`, 'Lunasi', 'neg')).join('') || '<p class="mu">Tidak ada piutang.</p>'}</div>
   <h3>Barang terlaris</h3><div class="card">${tp.map(([n, q]) => li(n, '', q + ' terjual')).join('') || '<p class="mu">Belum ada penjualan bulan ini.</p>'}</div>
+  ${shuH()}
   <div class="row2"><button class="btn" onclick="print()">Cetak laporan</button>${['Penjualan', 'Pembelian', 'Kas', 'Barang'].map(n => `<button class="btn ghost" onclick="csv('${n}')">Unduh ${n} (CSV)</button>`).join('')}</div>`;
 }
 const P = { home, jual, beli, kas, data, lap };
@@ -309,6 +317,8 @@ async function sub(e, k) {
   e.preventDefault();
   const o = Object.fromEntries(new FormData(e.target));
   const ok = k == 'beli' ? await post({ action: 'beli', ...o })
+    : k == 'simp' ? await post({ action: 'simpan', ...o })
+    : k == 'opn' ? await post({ action: 'opname', tanggal: o.tanggal, items: Object.keys(o).filter(x => x.startsWith('f_')).map(x => ({ barangId: x.slice(2), fisik: o[x] })) })
     : await post({ action: 'save', sheet: k == 'kas' ? 'Kas' : tab, row: o });
   if (ok) { edit = {}; render(); }
 }
@@ -370,6 +380,60 @@ function mic() {
   r.onresult = e => { $('#ai').value = e.results[0][0].transcript; };
   r.onerror = () => toast('Suara tidak terbaca'); r.start(); toast('Silakan bicara...');
 }
+// ---------- nota, simpanan, opname, SHU ----------
+const notas = () => { const g = {}; D.Penjualan.forEach(x => (g[x.nota] = g[x.nota] || []).push(x)); return Object.values(g).reverse(); };
+const histJ = (n = 15) => notas().slice(0, n).map(g => li(g[0].pembeli + (g[0].metode == 'Utang' ? ' (utang)' : ''), `${g[0].tanggal}, ${g.length} barang`, rp(g.reduce((s, x) => s + +x.total, 0)), `struk('${g[0].nota}')`, 'Struk')).join('') || '<p class="mu">Belum ada data.</p>';
+function strukTxt(n) {
+  const g = D.Penjualan.filter(x => x.nota == n);
+  if (!g.length) return '';
+  return ['KOPSIS CORNER AFAR', 'Nota ' + n + ', ' + g[0].tanggal, 'Pembeli: ' + g[0].pembeli + ' (' + g[0].metode + ')', '------------------------',
+    ...g.map(x => x.nama + '\n  ' + x.qty + ' x ' + rp(x.harga) + ' = ' + rp(x.total)), '------------------------',
+    'TOTAL ' + rp(g.reduce((s, x) => s + +x.total, 0)), 'Terima kasih!'].join('\n');
+}
+function struk(n) {
+  $('#md').innerHTML = `<div class="sh"><pre>${strukTxt(n)}</pre><div class="row2"><button class="btn" onclick="wa('${n}')">Kirim WhatsApp</button><button class="btn ghost" onclick="print()">Cetak</button><button class="btn red" onclick="delNota('${n}')">Hapus nota</button><button class="btn ghost" onclick="tutup()">Tutup</button></div></div>`;
+  $('#md').classList.add('on'); document.body.classList.add('sk');
+}
+const tutup = () => { $('#md').classList.remove('on'); document.body.classList.remove('sk'); };
+const wa = n => open('https://wa.me/?text=' + encodeURIComponent(strukTxt(n)));
+async function delNota(n) { if (confirm('Hapus seluruh nota ini? Stok akan dikembalikan.')) { tutup(); await post({ action: 'delnota', nota: n }); } }
+
+const tabsH = () => `<h2>Data</h2><div class="tabs">${['Barang', 'Anggota', 'Simpanan', 'Opname'].map(t => `<button class="btn ${t == tab ? '' : 'ghost'}" style="padding:10px 4px" onclick="tab='${t}';edit={};dq='';render()">${t}</button>`).join('')}</div>`;
+const sal = a => D.Simpanan.filter(x => x.anggotaId == a.id).reduce((s, x) => s + (x.jenis == 'Penarikan' ? -x.jumlah : +x.jumlah), 0);
+function simp() {
+  return tabsH() + `<form class="card fm" onsubmit="sub(event,'simp')">
+  ${field('tanggal', 'Tanggal', 'date', today(), 'required')}
+  <label>Jenis<select name="jenis">${opt(['Simpanan Pokok', 'Simpanan Wajib', 'Simpanan Sukarela', 'Penarikan'])}</select></label>
+  <label class="w">Anggota<select name="anggotaId">${D.Anggota.map(a => `<option value="${a.id}">${a.nama}`).join('')}</select></label>
+  ${field('jumlah', 'Jumlah', 'number', '', 'min=1 required')}${field('keterangan', 'Keterangan')}
+  <button class="btn w">Simpan transaksi</button></form>
+  <div class="card">${D.Anggota.map(a => li(a.nama, a.kelas || '-', rp(sal(a)))).join('') || '<p class="mu">Tambahkan anggota di tab Anggota dulu.</p>'}</div>
+  <h3>Riwayat</h3><div class="card">${D.Simpanan.slice(-15).reverse().map(x => li(x.nama, `${x.tanggal}, ${x.jenis}`, rp(x.jumlah), `del('Simpanan','${x.id}')`, 'Hapus', x.jenis == 'Penarikan' ? 'neg' : '')).join('') || '<p class="mu">Belum ada transaksi.</p>'}</div>`;
+}
+function opn() {
+  return tabsH() + `<form class="card" onsubmit="sub(event,'opn')"><label>Tanggal<input type="date" name="tanggal" value="${today()}"></label>
+  <p class="mu">Isi stok hasil hitungan fisik. Hanya barang yang berbeda dari stok sistem yang diperbarui.</p>
+  ${D.Barang.map(b => `<div class="li"><div><b>${b.nama}</b><small>Stok sistem ${b.stok} ${b.satuan}</small></div><input type="number" name="f_${b.id}" value="${b.stok}" min="0" style="width:90px"></div>`).join('')}
+  <button class="btn" style="width:100%;margin-top:10px">Simpan hasil opname</button></form>
+  <h3>Riwayat selisih</h3><div class="card">${D.Opname.slice(-15).reverse().map(x => li(x.nama, `${x.tanggal}, sistem ${x.stokSistem}, fisik ${x.stokFisik}`, (x.selisih > 0 ? '+' : '') + x.selisih, '', '', x.selisih < 0 ? 'neg' : '')).join('') || '<p class="mu">Belum ada opname.</p>'}</div>`;
+}
+let shu = { th: today().slice(0, 4), ps: 40, pt: 40 };
+function shuB() {
+  const y = String(shu.th), m = rk(y), lb = Math.max(m.laba - m.biaya, 0);
+  const tot = D.Anggota.reduce((s, a) => s + sal(a), 0);
+  const trx = a => D.Penjualan.filter(x => x.pembeli == a.nama && String(x.tanggal).startsWith(y)).reduce((s, x) => s + +x.total, 0);
+  const tt = D.Anggota.reduce((s, a) => s + trx(a), 0);
+  return row('Laba bersih tahun ' + y, lb, 1) + row('Cadangan dan lainnya', lb * (100 - shu.ps - shu.pt) / 100) +
+    (D.Anggota.map(a => li(a.nama, `Simpanan ${rp(sal(a))}, belanja ${rp(trx(a))}`, rp((tot ? sal(a) / tot * lb * shu.ps / 100 : 0) + (tt ? trx(a) / tt * lb * shu.pt / 100 : 0)))).join('') || '<p class="mu">Belum ada anggota.</p>') +
+    '<p class="mu">Perkiraan saja. Sesuaikan persentase dengan AD/ART kopsis. Jika laba negatif, SHU dihitung nol.</p>';
+}
+const shuU = () => { $('#shu').innerHTML = shuB(); };
+const shuH = () => `<h3>Simulasi SHU</h3><div class="card"><div class="fm">
+  <label>Tahun<input type="number" value="${shu.th}" oninput="shu.th=this.value;shuU()"></label>
+  <label>Jasa simpanan (%)<input type="number" value="${shu.ps}" min="0" max="100" oninput="shu.ps=+this.value;shuU()"></label>
+  <label class="w">Jasa transaksi (%)<input type="number" value="${shu.pt}" min="0" max="100" oninput="shu.pt=+this.value;shuU()"></label></div>
+  <div id="shu" style="margin-top:10px">${shuB()}</div></div>`;
+
 if (pin) load();
 </script>
 </body>
