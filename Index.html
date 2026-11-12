@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#34a265">
+<title>Kopsis Corner Afar App</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef9f1;--g:#34a265;--gd:#1f7a49;--gl:#d5f1df;--tx:#17301f;--mu:#62806b;--rd:#d0453f;--ln:#dcefe2}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+h2{margin:6px 0 12px;font-size:22px}h3{margin:18px 0 8px;font-size:16px}
+.mark{width:34px;height:34px;background:var(--g);border-radius:4px 16px 4px 16px;display:grid;place-items:center;color:#fff;font-weight:800}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;line-height:1.1}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;border-bottom:1px solid var(--ln)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--ln);z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:7px 2px;font:inherit;font-size:11px;color:var(--mu);cursor:pointer}
+nav button b{display:block;font-size:19px;font-weight:400}
+nav button.on{color:var(--gd);font-weight:800}
+nav .logo{display:none}
+main{padding:14px 14px 96px;max-width:920px;margin:auto}
+.card{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.hero{background:var(--g);color:#fff;border-radius:6px 28px 6px 28px;padding:20px 22px;margin-bottom:12px}
+.hero small{opacity:.9}.hero div{font-size:32px;font-weight:800;line-height:1.2}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.st .card{margin:0}.st small{color:var(--mu);display:block}.st b{font-size:18px}
+.fm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fm .w{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--mu);font-weight:600}
+input,select{width:100%;margin-top3px;margin-top:3px;padding:10px;border:1px solid var(--ln);border-radius:10px;font:inherit;font-size:16px;background:#f9fdfa;color:var(--tx)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline-offset:1px}
+.btn{border:0;background:var(--g);color:#fff;padding:11px 16px;border-radius:10px;font:inherit;font-weight:800;cursor:pointer}
+.btn.ghost{background:var(--gl);color:var(--gd)}.btn.red{background:#fde6e5;color:var(--rd)}
+.li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--ln)}
+.li:last-child{border:0}.li>div{flex:1;min-width:0}.li small{display:block;color:var(--mu)}
+.li span{font-weight:800;white-space:nowrap}.neg{color:var(--rd)}.mu{color:var(--mu)}
+.x{border:0;background:var(--gl);color:var(--gd);border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+.tot{display:flex;justify-content:space-between;font-size:18px;margin:10px 0}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--ln)}
+.row.s{font-weight:800}.row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#lg{min-height:100vh;display:grid;place-items:center;padding:20px}
+#lg form{background:#fff;padding:26px;border-radius:6px 28px 6px 28px;width:100%;max-width:340px;display:grid;gap:12px}
+#app{display:none}.in #app{display:block}.in #lg{display:none}
+#t{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--tx);color:#fff;padding:9px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#t.on{opacity:1}
+@media(min-width:800px){
+ body.in{padding-left:210px}
+ nav{top:0;bottom:auto;right:auto;width:210px;height:100%;flex-direction:column;border-top:0;border-right:1px solid var(--ln);padding:20px 10px;gap:4px}
+ nav .logo{display:flex;margin:0 6px 20px}
+ nav button{flex:none;text-align:left;font-size:15px;padding:10px 12px;border-radius:10px;display:flex;gap:10px;align-items:center}
+ nav button b{display:inline;font-size:18px}nav button.on{background:var(--gl)}
+ .mh{display:none}.st{grid-template-columns:repeat(4,1fr)}main{padding-bottom:30px}#t{bottom:30px}
+}
+@media print{nav,.mh,.btn,.row2,#t,.card:has(input){display:none!important}body.in{padding:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="lg">
+ <form onsubmit="login(event)">
+  <div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div>
+  <label>PIN pengelola<input id="pin" type="password" inputmode="numeric" autocomplete="current-password" required></label>
+  <button class="btn">Masuk</button>
+ </form>
+</div>
+<div id="app">
+ <div class="mh"><div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div><button class="x" onclick="logout()">Keluar</button></div>
+ <nav>
+  <div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div>
+  <button data-p="home" onclick="go('home')"><b>🏠</b>Beranda</button>
+  <button data-p="jual" onclick="go('jual')"><b>🛒</b>Jual</button>
+  <button data-p="beli" onclick="go('beli')"><b>📦</b>Beli</button>
+  <button data-p="kas" onclick="go('kas')"><b>💰</b>Kas</button>
+  <button data-p="data" onclick="go('data')"><b>🗂️</b>Data</button>
+  <button data-p="lap" onclick="go('lap')"><b>📊</b>Laporan</button>
+ </nav>
+ <main></main>
+</div>
+<div id="t"></div>
+<script>
+// Tempel URL Web App dari Apps Script di sini (Deploy > Manage deployments)
+const API = 'https://script.google.com/macros/s/AKfycbz-DLd3mPn4xTkCeCx274BLVDQO4J0zEaPzPDKbX9hKvIjfanDLx7btavAd7dJJN4Ts/exec';
+
+const $ = s => document.querySelector(s);
+const rp = n => (n < 0 ? '-' : '') + 'Rp ' + Math.abs(Math.round(+n || 0)).toLocaleString('id-ID');
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+let D = {}, pin = localStorage.kcPin || '', pg = 'home', tab = 'Barang', cart = [], edit = {};
+let jf = { tanggal: today(), pembeli: '', metode: 'Tunai' }, lm = today().slice(0, 7);
+
+function toast(m) { const t = $('#t'); t.textContent = m; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200); }
+async function load() {
+  try {
+    const j = await (await fetch(API + '?pin=' + encodeURIComponent(pin))).json();
+    if (j.error) { logout(); toast(j.error); return; }
+    D = j; document.body.classList.add('in'); render();
+  } catch (e) { toast('Gagal memuat data. Periksa URL Apps Script dan koneksi.'); }
+}
+async function post(b) {
+  b.pin = pin;
+  try {
+    const j = await (await fetch(API, { method: 'POST', body: JSON.stringify(b) })).json();
+    if (j.error) { toast(j.error); return false; }
+    await load(); toast('Tersimpan'); return true;
+  } catch (e) { toast('Gagal menyimpan. Coba lagi.'); return false; }
+}
+function login(e) { e.preventDefault(); pin = $('#pin').value; localStorage.kcPin = pin; load(); }
+function logout() { localStorage.removeItem('kcPin'); pin = ''; D = {}; document.body.classList.remove('in'); }
+function go(p) { pg = p; render(); scrollTo(0, 0); }
+
+// ---------- helper tampilan ----------
+const li = (t, s, r, a, l, c = '') => `<div class="li"><div><b>${t}</b><small>${s}</small></div><span class="${c}">${r}</span>${a ? `<button class="x" onclick="${a}">${l}</button>` : ''}</div>`;
+const field = (n, l, t = 'text', v = '', x = '') => `<label>${l}<input name="${n}" type="${t}" value="${v}" ${x}></label>`;
+const row = (l, v, s) => `<div class="row ${s ? 's' : ''}"><span>${l}</span><span class="${v < 0 ? 'neg' : ''}">${rp(v)}</span></div>`;
+const opt = (a, v) => a.map(x => `<option ${x == v ? 'selected' : ''}>${x}`).join('');
+const hist = n => D[n].slice(-15).reverse().map(x => li(x.nama || x.kategori, `${x.tanggal}${x.qty ? ', ' + x.qty + ' pcs' : ''}${x.pembeli ? ', ' + x.pembeli : ''}${x.metode == 'Utang' ? ' (utang)' : ''}${x.keterangan ? ', ' + x.keterangan : ''}`, rp(x.total ?? x.jumlah), `del('${n}','${x.id}')`, 'Hapus', x.jenis == 'Keluar' ? 'neg' : '')).join('') || '<p class="mu">Belum ada data.</p>';
+
+// ---------- perhitungan ----------
+function rk(m) {
+  const p = a => m ? a.filter(x => String(x.tanggal).startsWith(m)) : a;
+  const J = p(D.Penjualan), B = p(D.Pembelian), K = p(D.Kas);
+  const S = (a, k, f = () => 1) => a.filter(f).reduce((s, x) => s + +x[k], 0);
+  const jual = S(J, 'total'), hpp = J.reduce((s, x) => s + x.qty * x.modal, 0);
+  const tunai = S(J, 'total', x => x.metode == 'Tunai'), utang = S(J, 'total', x => x.metode != 'Tunai');
+  const beli = S(B, 'total'), km = S(K, 'jumlah', x => x.jenis == 'Masuk'), kk = S(K, 'jumlah', x => x.jenis == 'Keluar');
+  return { jual, hpp, laba: jual - hpp, tunai, utang, beli, km, kk,
+    biaya: S(K, 'jumlah', x => x.kategori == 'Biaya operasional'),
+    saldo: tunai + km - beli - kk,
+    piutang: utang - S(K, 'jumlah', x => x.kategori == 'Pelunasan piutang') };
+}
+
+// ---------- halaman ----------
+function home() {
+  const t = today(), m = rk(t.slice(0, 7)), A = rk();
+  const hari = D.Penjualan.filter(x => x.tanggal == t).reduce((s, x) => s + +x.total, 0);
+  const low = D.Barang.filter(b => +b.stok <= +b.stokMin);
+  return `<div class="hero"><small>Saldo kas kopsis</small><div>${rp(A.saldo)}</div></div>
+  <div class="st"><div class="card"><small>Penjualan hari ini</small><b>${rp(hari)}</b></div>
+  <div class="card"><small>Laba kotor bulan ini</small><b>${rp(m.laba)}</b></div>
+  <div class="card"><small>Piutang belum lunas</small><b>${rp(A.piutang)}</b></div>
+  <div class="card"><small>Jumlah barang</small><b>${D.Barang.length}</b></div></div>
+  <h3>Stok menipis</h3><div class="card">${low.map(b => li(b.nama, 'Minimum ' + b.stokMin, b.stok + ' ' + b.satuan, '', '', 'neg')).join('') || '<p class="mu">Semua stok aman.</p>'}</div>
+  <h3>Penjualan terakhir</h3><div class="card">${hist('Penjualan').split('</div></div>').slice(0, 5).join('</div></div>')}</div>`;
+}
+function jual() {
+  const tot = cart.reduce((s, x) => s + x.qty * x.harga, 0);
+  return `<h2>Penjualan</h2><div class="card"><div class="fm">
+  <label>Tanggal<input type="date" value="${jf.tanggal}" oninput="jf.tanggal=this.value"></label>
+  <label>Pembeli<input list="ag" value="${jf.pembeli}" placeholder="Umum" oninput="jf.pembeli=this.value"></label>
+  <datalist id="ag">${D.Anggota.map(a => `<option>${a.nama}`).join('')}</datalist>
+  <label class="w">Pembayaran<select oninput="jf.metode=this.value">${opt(['Tunai', 'Utang'], jf.metode)}</select></label>
+  <label>Barang<select id="cb">${D.Barang.map(b => `<option value="${b.id}">${b.nama} (stok ${b.stok})`).join('')}</select></label>
+  <label>Jumlah<input id="cq" type="number" min="1" value="1"></label>
+  <button class="btn ghost w" onclick="addCart()">Tambah ke keranjang</button></div>
+  ${cart.map((x, i) => li(x.nama, `${x.qty} x ${rp(x.harga)}`, rp(x.qty * x.harga), `cart.splice(${i},1);render()`, 'Hapus')).join('') || '<p class="mu">Keranjang kosong. Pilih barang, lalu tambahkan.</p>'}
+  <div class="tot"><span>Total</span><b>${rp(tot)}</b></div><button class="btn" onclick="saveJual()">Simpan penjualan</button></div>
+  <h3>Riwayat terbaru</h3><div class="card">${hist('Penjualan')}</div>`;
+}
+function addCart() {
+  const b = D.Barang.find(x => x.id == $('#cb').value), q = +$('#cq').value;
+  if (!b || q < 1) return toast('Pilih barang dan jumlah');
+  const c = cart.find(x => x.id == b.id), n = (c ? c.qty : 0) + q;
+  if (n > b.stok) return toast('Stok ' + b.nama + ' hanya ' + b.stok);
+  if (c) c.qty = n; else cart.push({ id: b.id, nama: b.nama, qty: q, harga: +b.hargaJual });
+  render();
+}
+async function saveJual() {
+  if (!cart.length) return toast('Keranjang masih kosong');
+  if (await post({ action: 'jual', tanggal: jf.tanggal, pembeli: jf.pembeli || 'Umum', metode: jf.metode, items: cart.map(x => ({ barangId: x.id, qty: x.qty, harga: x.harga })) })) { cart = []; jf.pembeli = ''; render(); }
+}
+function beli() {
+  return `<h2>Pembelian</h2><form class="card fm" onsubmit="sub(event,'beli')">
+  ${field('tanggal', 'Tanggal', 'date', today(), 'required')}${field('supplier', 'Supplier')}
+  <label class="w">Barang<select name="barangId">${D.Barang.map(b => `<option value="${b.id}">${b.nama} (stok ${b.stok})`).join('')}</select></label>
+  ${field('qty', 'Jumlah', 'number', '', 'min=1 required')}${field('hargaBeli', 'Harga beli satuan', 'number', '', 'min=0 required')}
+  <button class="btn w">Simpan pembelian</button></form>
+  <h3>Riwayat terbaru</h3><div class="card">${hist('Pembelian')}</div>`;
+}
+function kas() {
+  const A = rk();
+  return `<h2>Kas Umum</h2><div class="hero"><small>Saldo kas</small><div>${rp(A.saldo)}</div></div>
+  <form class="card fm" onsubmit="sub(event,'kas')">
+  ${field('tanggal', 'Tanggal', 'date', today(), 'required')}
+  <label>Jenis<select name="jenis">${opt(['Masuk', 'Keluar'])}</select></label>
+  <label>Kategori<input name="kategori" list="kt" required placeholder="Pilih atau ketik"></label>
+  <datalist id="kt">${['Modal awal', 'Simpanan anggota', 'Pelunasan piutang', 'Biaya operasional', 'Setoran sekolah', 'Lainnya'].map(k => `<option>${k}`).join('')}</datalist>
+  ${field('jumlah', 'Jumlah', 'number', '', 'min=1 required')}${field('keterangan', 'Keterangan', 'text', '', 'class=w')}
+  <button class="btn w">Simpan kas</button></form>
+  <p class="mu">Penjualan tunai dan pembelian barang otomatis masuk ke saldo. Catat di sini kas di luar keduanya.</p>
+  <h3>Riwayat terbaru</h3><div class="card">${hist('Kas')}</div>`;
+}
+const FL = {
+  Barang: [['nama', 'Nama barang'], ['satuan', 'Satuan', 'text', 'pcs'], ['hargaBeli', 'Harga beli', 'number'], ['hargaJual', 'Harga jual', 'number'], ['stok', 'Stok', 'number'], ['stokMin', 'Stok minimum', 'number', '5']],
+  Anggota: [['nama', 'Nama'], ['kelas', 'Kelas atau unit'], ['telp', 'No. HP', 'tel']]
+};
+function data() {
+  const e = edit.id ? edit : {};
+  return `<h2>Data</h2><div class="tabs">${['Barang', 'Anggota'].map(t => `<button class="btn ${t == tab ? '' : 'ghost'}" onclick="tab='${t}';edit={};render()">${t}</button>`).join('')}</div>
+  <form class="card fm" onsubmit="sub(event,'data')"><input type="hidden" name="id" value="${e.id || ''}">
+  ${FL[tab].map(f => field(f[0], f[1], f[2] || 'text', e[f[0]] ?? f[3] ?? '', f[0] == 'nama' ? 'required' : '')).join('')}
+  <button class="btn w">${e.id ? 'Simpan perubahan' : 'Tambah ' + tab.toLowerCase()}</button>
+  ${e.id ? `<button type="button" class="btn ghost" onclick="edit={};render()">Batal</button><button type="button" class="btn red" onclick="del('${tab}','${e.id}')">Hapus</button>` : ''}</form>
+  <div class="card">${D[tab].map(x => tab == 'Barang'
+    ? li(x.nama, `Beli ${rp(x.hargaBeli)}, jual ${rp(x.hargaJual)}`, x.stok + ' ' + x.satuan, `ed('${x.id}')`, 'Ubah', +x.stok <= +x.stokMin ? 'neg' : '')
+    : li(x.nama, [x.kelas, x.telp].filter(Boolean).join(', ') || '-', '', `ed('${x.id}')`, 'Ubah')).join('') || '<p class="mu">Belum ada data.</p>'}</div>`;
+}
+function lap() {
+  const m = rk(lm), A = rk(), top = {};
+  D.Penjualan.filter(x => String(x.tanggal).startsWith(lm)).forEach(x => top[x.nama] = (top[x.nama] || 0) + +x.qty);
+  const tp = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  return `<h2>Laporan Kopsis</h2><div class="card"><label>Bulan<input type="month" value="${lm}" oninput="if(this.value){lm=this.value;render()}"></label></div>
+  <div class="card">${row('Penjualan', m.jual)}${row('Harga pokok', -m.hpp)}${row('Laba kotor', m.laba, 1)}${row('Biaya operasional', -m.biaya)}${row('Laba bersih', m.laba - m.biaya, 1)}</div>
+  <div class="card">${row('Pembelian barang', m.beli)}${row('Kas masuk lain', m.km)}${row('Kas keluar', m.kk)}${row('Saldo kas (semua periode)', A.saldo, 1)}${row('Piutang belum lunas', A.piutang)}</div>
+  <h3>Barang terlaris</h3><div class="card">${tp.map(([n, q]) => li(n, '', q + ' terjual')).join('') || '<p class="mu">Belum ada penjualan bulan ini.</p>'}</div>
+  <div class="row2"><button class="btn" onclick="print()">Cetak laporan</button>${['Penjualan', 'Pembelian', 'Kas', 'Barang'].map(n => `<button class="btn ghost" onclick="csv('${n}')">Unduh ${n} (CSV)</button>`).join('')}</div>`;
+}
+const P = { home, jual, beli, kas, data, lap };
+function render() {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.p == pg));
+  $('main').innerHTML = P[pg]();
+}
+
+// ---------- aksi ----------
+async function sub(e, k) {
+  e.preventDefault();
+  const o = Object.fromEntries(new FormData(e.target));
+  const ok = k == 'beli' ? await post({ action: 'beli', ...o })
+    : await post({ action: 'save', sheet: k == 'kas' ? 'Kas' : tab, row: o });
+  if (ok) { edit = {}; render(); }
+}
+async function del(n, id) { if (confirm('Hapus data ini?')) { await post({ action: 'del', sheet: n, id }); edit = {}; render(); } }
+function ed(id) { edit = D[tab].find(x => x.id == id) || {}; render(); scrollTo(0, 0); }
+function csv(n) {
+  const h = Object.keys(D[n][0] || {});
+  const t = [h.join(','), ...D[n].map(r => h.map(k => `"${String(r[k]).replace(/"/g, '""')}"`).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([t], { type: 'text/csv' })); a.download = n + '.csv'; a.click();
+}
+if (pin) load();
+</script>
+</body>
+</html>
