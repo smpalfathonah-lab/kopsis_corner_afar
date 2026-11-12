@@ -45,7 +45,26 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
 #app{display:none}.in #app{display:block}.in #lg{display:none}
 #t{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--tx);color:#fff;padding:9px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
 #t.on{opacity:1}
+.hero{position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-30px;top:-34px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.14)}
+.pg{animation:pin .25s ease}@keyframes pin{from{opacity:0;transform:translateY(6px)}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:12px 0 4px}
+.tile{border:1px solid var(--ln);background:#f9fdfa;border-radius:12px;padding:10px;text-align:left;font:inherit;color:var(--tx);cursor:pointer;position:relative;transition:transform .12s,background .12s}
+.tile:hover{background:var(--gl)}.tile:active{transform:scale(.95)}
+.tile b{display:block}.tile small{display:block;color:var(--mu)}
+.tile i{position:absolute;top:-6px;right:-4px;background:var(--gd);color:#fff;border-radius:12px;min-width:22px;text-align:center;padding:0 6px;font-style:normal;font-size:12px;font-weight:800}
+.tile.off{opacity:.45}
+.li>.qty{flex:none;display:flex;gap:8px;align-items:center}
+.qty button{width:30px;height:30px;border:0;border-radius:9px;background:var(--gl);color:var(--gd);font-weight:800;font-size:17px;cursor:pointer}
+.chart{display:flex;align-items:flex-end;gap:8px;height:140px}
+.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:11px;color:var(--mu);cursor:pointer}
+.chart i{display:block;width:100%;height:0;min-height:3px;background:var(--g);border-radius:6px 6px 2px 2px;transition:height .6s cubic-bezier(.2,.8,.2,1),background .15s}
+.chart div:last-child i,.chart div:hover i{background:var(--gd)}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.qa button{border:1px solid var(--ln);background:#fff;border-radius:12px;padding:10px 4px;font:inherit;font-size:12px;color:var(--tx);cursor:pointer;transition:transform .12s}
+.qa button:active{transform:scale(.94)}.qa b{display:block;font-size:22px;font-weight:400}
+.dk{display:none}
 @media(min-width:800px){
+ nav button.dk{display:flex}nav button.dk:first-of-type{margin-top:auto}
  body.in{padding-left:210px}
  nav{top:0;bottom:auto;right:auto;width:210px;height:100%;flex-direction:column;border-top:0;border-right:1px solid var(--ln);padding:20px 10px;gap:4px}
  nav .logo{display:flex;margin:0 6px 20px}
@@ -66,7 +85,7 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
  </form>
 </div>
 <div id="app">
- <div class="mh"><div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div><button class="x" onclick="logout()">Keluar</button></div>
+ <div class="mh"><div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div><span><button class="x" onclick="load()">Muat ulang</button> <button class="x" onclick="logout()">Keluar</button></span></div>
  <nav>
   <div class="logo"><div class="mark">K</div><div>Kopsis Corner<br>Afar App</div></div>
   <button data-p="home" onclick="go('home')"><b>🏠</b>Beranda</button>
@@ -75,6 +94,8 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
   <button data-p="kas" onclick="go('kas')"><b>💰</b>Kas</button>
   <button data-p="data" onclick="go('data')"><b>🗂️</b>Data</button>
   <button data-p="lap" onclick="go('lap')"><b>📊</b>Laporan</button>
+   <button class="dk" onclick="load()"><b>🔄</b>Muat ulang</button>
+  <button class="dk" onclick="logout()"><b>🚪</b>Keluar</button>
  </nav>
  <main></main>
 </div>
@@ -135,38 +156,64 @@ function home() {
   const t = today(), m = rk(t.slice(0, 7)), A = rk();
   const hari = D.Penjualan.filter(x => x.tanggal == t).reduce((s, x) => s + +x.total, 0);
   const low = D.Barang.filter(b => +b.stok <= +b.stokMin);
-  return `<div class="hero"><small>Saldo kas kopsis</small><div>${rp(A.saldo)}</div></div>
+  const base = Date.now() - new Date().getTimezoneOffset() * 6e4;
+  const wk = [...Array(7)].map((_, i) => { const d = new Date(base - (6 - i) * 864e5).toISOString().slice(0, 10); return [d.slice(8), D.Penjualan.filter(x => x.tanggal == d).reduce((s, x) => s + +x.total, 0)]; });
+  const mx = Math.max(...wk.map(w => w[1]), 1), hr = new Date().getHours();
+  const sapa = hr < 11 ? 'Selamat pagi' : hr < 15 ? 'Selamat siang' : hr < 18 ? 'Selamat sore' : 'Selamat malam';
+  return `<h2>${sapa}</h2><div class="hero"><small>Saldo kas kopsis</small><div data-v="${A.saldo}">${rp(A.saldo)}</div></div>
+  <div class="qa">${[['jual', '🛒', 'Jual'], ['beli', '📦', 'Beli'], ['kas', '💰', 'Kas'], ['lap', '📊', 'Laporan']].map(q => `<button onclick="go('${q[0]}')"><b>${q[1]}</b>${q[2]}</button>`).join('')}</div>
   <div class="st"><div class="card"><small>Penjualan hari ini</small><b>${rp(hari)}</b></div>
   <div class="card"><small>Laba kotor bulan ini</small><b>${rp(m.laba)}</b></div>
   <div class="card"><small>Piutang belum lunas</small><b>${rp(A.piutang)}</b></div>
   <div class="card"><small>Jumlah barang</small><b>${D.Barang.length}</b></div></div>
+  <h3>Penjualan 7 hari terakhir</h3><div class="card"><div class="chart">${wk.map(w => `<div onclick="toast('Tgl ${w[0]}: ${rp(w[1])}')"><i data-h="${w[1] / mx * 100}"></i>${w[0]}</div>`).join('')}</div></div>
   <h3>Stok menipis</h3><div class="card">${low.map(b => li(b.nama, 'Minimum ' + b.stokMin, b.stok + ' ' + b.satuan, '', '', 'neg')).join('') || '<p class="mu">Semua stok aman.</p>'}</div>
   <h3>Penjualan terakhir</h3><div class="card">${hist('Penjualan').split('</div></div>').slice(0, 5).join('</div></div>')}</div>`;
 }
+let q = '', dq = '', lp = '';
+const tiles = () => D.Barang.filter(b => b.nama.toLowerCase().includes(q.toLowerCase())).map(b => {
+  const c = cart.find(x => x.id == b.id);
+  return `<button class="tile ${+b.stok < 1 ? 'off' : ''}" onclick="addCart('${b.id}')">${c ? `<i>${c.qty}</i>` : ''}<b>${b.nama}</b><small>${rp(b.hargaJual)}</small><small>stok ${b.stok}</small></button>`;
+}).join('') || '<p class="mu">Barang tidak ditemukan.</p>';
+const cartHtml = () => (cart.map((x, i) => `<div class="li"><div><b>${x.nama}</b><small>${rp(x.harga)}</small></div><div class="qty"><button onclick="chg(${i},-1)">-</button><b>${x.qty}</b><button onclick="chg(${i},1)">+</button></div><span>${rp(x.qty * x.harga)}</span></div>`).join('') || '<p class="mu">Ketuk barang di atas untuk memasukkannya ke keranjang.</p>') + `<div class="tot"><span>Total</span><b>${rp(cart.reduce((s, x) => s + x.qty * x.harga, 0))}</b></div>`;
+const upd = () => { $('#tl').innerHTML = tiles(); $('#ct').innerHTML = cartHtml(); };
+const fq = v => { q = v; $('#tl').innerHTML = tiles(); };
+function chg(i, d) {
+  const x = cart[i], b = D.Barang.find(y => y.id == x.id), n = x.qty + d;
+  if (n > b.stok) return toast('Stok ' + b.nama + ' hanya ' + b.stok);
+  if (n < 1) cart.splice(i, 1); else x.qty = n;
+  upd();
+}
+function addCart(id) {
+  const b = D.Barang.find(x => x.id == id), c = cart.find(x => x.id == id);
+  if (!b || +b.stok < 1) return toast('Stok habis');
+  if (c) return chg(cart.indexOf(c), 1);
+  cart.push({ id, nama: b.nama, qty: 1, harga: +b.hargaJual }); upd();
+}
 function jual() {
-  const tot = cart.reduce((s, x) => s + x.qty * x.harga, 0);
   return `<h2>Penjualan</h2><div class="card"><div class="fm">
   <label>Tanggal<input type="date" value="${jf.tanggal}" oninput="jf.tanggal=this.value"></label>
   <label>Pembeli<input list="ag" value="${jf.pembeli}" placeholder="Umum" oninput="jf.pembeli=this.value"></label>
   <datalist id="ag">${D.Anggota.map(a => `<option>${a.nama}`).join('')}</datalist>
   <label class="w">Pembayaran<select oninput="jf.metode=this.value">${opt(['Tunai', 'Utang'], jf.metode)}</select></label>
-  <label>Barang<select id="cb">${D.Barang.map(b => `<option value="${b.id}">${b.nama} (stok ${b.stok})`).join('')}</select></label>
-  <label>Jumlah<input id="cq" type="number" min="1" value="1"></label>
-  <button class="btn ghost w" onclick="addCart()">Tambah ke keranjang</button></div>
-  ${cart.map((x, i) => li(x.nama, `${x.qty} x ${rp(x.harga)}`, rp(x.qty * x.harga), `cart.splice(${i},1);render()`, 'Hapus')).join('') || '<p class="mu">Keranjang kosong. Pilih barang, lalu tambahkan.</p>'}
-  <div class="tot"><span>Total</span><b>${rp(tot)}</b></div><button class="btn" onclick="saveJual()">Simpan penjualan</button></div>
+  <input class="w" type="search" placeholder="Cari barang..." value="${q}" oninput="fq(this.value)"></div>
+  <div class="tiles" id="tl">${tiles()}</div></div>
+  <div class="card"><div id="ct">${cartHtml()}</div><button class="btn" style="width:100%" onclick="saveJual()">Simpan penjualan</button></div>
   <h3>Riwayat terbaru</h3><div class="card">${hist('Penjualan')}</div>`;
 }
-function addCart() {
-  const b = D.Barang.find(x => x.id == $('#cb').value), q = +$('#cq').value;
-  if (!b || q < 1) return toast('Pilih barang dan jumlah');
-  const c = cart.find(x => x.id == b.id), n = (c ? c.qty : 0) + q;
-  if (n > b.stok) return toast('Stok ' + b.nama + ' hanya ' + b.stok);
-  if (c) c.qty = n; else cart.push({ id: b.id, nama: b.nama, qty: q, harga: +b.hargaJual });
-  render();
+function pp() {
+  const o = {};
+  D.Penjualan.filter(x => x.metode == 'Utang').forEach(x => o[x.pembeli] = (o[x.pembeli] || 0) + +x.total);
+  D.Kas.filter(x => x.kategori == 'Pelunasan piutang').forEach(x => { if (x.keterangan in o) o[x.keterangan] -= +x.jumlah; });
+  return Object.entries(o).filter(e => e[1] > 0);
+}
+async function lunasI(i) {
+  const [n, v] = pp()[i], j = prompt('Jumlah pelunasan ' + n + ' (sisa ' + rp(v) + ')', v);
+  if (j && +j > 0) await post({ action: 'save', sheet: 'Kas', row: { tanggal: today(), jenis: 'Masuk', kategori: 'Pelunasan piutang', keterangan: n, jumlah: +j } });
 }
 async function saveJual() {
   if (!cart.length) return toast('Keranjang masih kosong');
+  if (jf.metode == 'Utang' && !jf.pembeli) return toast('Isi nama pembeli untuk penjualan utang');
   if (await post({ action: 'jual', tanggal: jf.tanggal, pembeli: jf.pembeli || 'Umum', metode: jf.metode, items: cart.map(x => ({ barangId: x.id, qty: x.qty, harga: x.harga })) })) { cart = []; jf.pembeli = ''; render(); }
 }
 function beli() {
@@ -194,16 +241,19 @@ const FL = {
   Barang: [['nama', 'Nama barang'], ['satuan', 'Satuan', 'text', 'pcs'], ['hargaBeli', 'Harga beli', 'number'], ['hargaJual', 'Harga jual', 'number'], ['stok', 'Stok', 'number'], ['stokMin', 'Stok minimum', 'number', '5']],
   Anggota: [['nama', 'Nama'], ['kelas', 'Kelas atau unit'], ['telp', 'No. HP', 'tel']]
 };
+const dlist = () => D[tab].filter(x => x.nama.toLowerCase().includes(dq.toLowerCase())).map(x => tab == 'Barang'
+  ? li(x.nama, `Beli ${rp(x.hargaBeli)}, jual ${rp(x.hargaJual)}`, x.stok + ' ' + x.satuan, `ed('${x.id}')`, 'Ubah', +x.stok <= +x.stokMin ? 'neg' : '')
+  : li(x.nama, [x.kelas, x.telp].filter(Boolean).join(', ') || '-', '', `ed('${x.id}')`, 'Ubah')).join('') || '<p class="mu">Tidak ada data.</p>';
+const fd = v => { dq = v; $('#dl').innerHTML = dlist(); };
 function data() {
   const e = edit.id ? edit : {};
-  return `<h2>Data</h2><div class="tabs">${['Barang', 'Anggota'].map(t => `<button class="btn ${t == tab ? '' : 'ghost'}" onclick="tab='${t}';edit={};render()">${t}</button>`).join('')}</div>
+  return `<h2>Data</h2><div class="tabs">${['Barang', 'Anggota'].map(t => `<button class="btn ${t == tab ? '' : 'ghost'}" onclick="tab='${t}';edit={};dq='';render()">${t}</button>`).join('')}</div>
   <form class="card fm" onsubmit="sub(event,'data')"><input type="hidden" name="id" value="${e.id || ''}">
   ${FL[tab].map(f => field(f[0], f[1], f[2] || 'text', e[f[0]] ?? f[3] ?? '', f[0] == 'nama' ? 'required' : '')).join('')}
   <button class="btn w">${e.id ? 'Simpan perubahan' : 'Tambah ' + tab.toLowerCase()}</button>
   ${e.id ? `<button type="button" class="btn ghost" onclick="edit={};render()">Batal</button><button type="button" class="btn red" onclick="del('${tab}','${e.id}')">Hapus</button>` : ''}</form>
-  <div class="card">${D[tab].map(x => tab == 'Barang'
-    ? li(x.nama, `Beli ${rp(x.hargaBeli)}, jual ${rp(x.hargaJual)}`, x.stok + ' ' + x.satuan, `ed('${x.id}')`, 'Ubah', +x.stok <= +x.stokMin ? 'neg' : '')
-    : li(x.nama, [x.kelas, x.telp].filter(Boolean).join(', ') || '-', '', `ed('${x.id}')`, 'Ubah')).join('') || '<p class="mu">Belum ada data.</p>'}</div>`;
+  <input type="search" placeholder="Cari ${tab.toLowerCase()}..." value="${dq}" oninput="fd(this.value)" style="margin-bottom:10px">
+  <div class="card" id="dl">${dlist()}</div>`;
 }
 function lap() {
   const m = rk(lm), A = rk(), top = {};
@@ -212,13 +262,21 @@ function lap() {
   return `<h2>Laporan Kopsis</h2><div class="card"><label>Bulan<input type="month" value="${lm}" oninput="if(this.value){lm=this.value;render()}"></label></div>
   <div class="card">${row('Penjualan', m.jual)}${row('Harga pokok', -m.hpp)}${row('Laba kotor', m.laba, 1)}${row('Biaya operasional', -m.biaya)}${row('Laba bersih', m.laba - m.biaya, 1)}</div>
   <div class="card">${row('Pembelian barang', m.beli)}${row('Kas masuk lain', m.km)}${row('Kas keluar', m.kk)}${row('Saldo kas (semua periode)', A.saldo, 1)}${row('Piutang belum lunas', A.piutang)}</div>
+  <h3>Piutang per pembeli</h3><div class="card">${pp().map(([n, v], i) => li(n, 'Belum lunas', rp(v), `lunasI(${i})`, 'Lunasi', 'neg')).join('') || '<p class="mu">Tidak ada piutang.</p>'}</div>
   <h3>Barang terlaris</h3><div class="card">${tp.map(([n, q]) => li(n, '', q + ' terjual')).join('') || '<p class="mu">Belum ada penjualan bulan ini.</p>'}</div>
   <div class="row2"><button class="btn" onclick="print()">Cetak laporan</button>${['Penjualan', 'Pembelian', 'Kas', 'Barang'].map(n => `<button class="btn ghost" onclick="csv('${n}')">Unduh ${n} (CSV)</button>`).join('')}</div>`;
 }
 const P = { home, jual, beli, kas, data, lap };
 function render() {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.p == pg));
-  $('main').innerHTML = P[pg]();
+  const m = $('main'); m.innerHTML = P[pg]();
+  if (lp != pg) { m.classList.remove('pg'); void m.offsetWidth; m.classList.add('pg'); lp = pg; }
+  requestAnimationFrame(() => document.querySelectorAll('.chart i').forEach(i => i.style.height = i.dataset.h + '%'));
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  document.querySelectorAll('[data-v]').forEach(e => {
+    const v = +e.dataset.v, t0 = performance.now();
+    (function f(t) { const k = Math.min((t - t0) / 700, 1); e.textContent = rp(v * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0);
+  });
 }
 
 // ---------- aksi ----------
