@@ -74,6 +74,25 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
 }
 @media print{nav,.mh,.btn,.row2,#t,.card:has(input){display:none!important}body.in{padding:0}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.fab{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom));width:54px;height:54px;border:0;border-radius:6px 22px 6px 22px;background:var(--gd);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(31,122,73,.35);cursor:pointer;z-index:6;transition:transform .15s}
+.fab:active{transform:scale(.92)}
+#ag{position:fixed;left:0;right:0;bottom:0;height:78vh;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.15);z-index:8;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+#ag.on{transform:none}
+.ah{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--ln);font-weight:800}
+#am{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.b{max-width:85%;padding:9px 12px;border-radius:14px;overflow-wrap:anywhere}
+.b.u{align-self:flex-end;background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.b.a{align-self:flex-start;background:var(--gl);border-bottom-left-radius:4px}
+.b.p{align-self:stretch;max-width:100%;border:1px dashed var(--g);background:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--ln);background:#fff;border-radius:16px;padding:5px 11px;font:inherit;font-size:13px;color:var(--tx);cursor:pointer}
+.af{display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--ln)}
+.af input{margin:0}.af button{flex:none}
+.dot span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--gd);animation:bn 1s infinite}
+.dot span:nth-child(2){animation-delay:.15s}.dot span:nth-child(3){animation-delay:.3s}
+@keyframes bn{50%{transform:translateY(-5px);opacity:.5}}
+@media(min-width:800px){.fab{bottom:24px;right:24px}#ag{left:auto;right:24px;bottom:90px;width:400px;height:560px;border-radius:20px;transform:translateY(20px);opacity:0;pointer-events:none}#ag.on{transform:none;opacity:1;pointer-events:auto}}
+@media print{.fab,#ag{display:none!important}}
 </style>
 </head>
 <body>
@@ -98,11 +117,17 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--g);outline
   <button class="dk" onclick="logout()"><b>🚪</b>Keluar</button>
  </nav>
  <main></main>
+ <button class="fab" onclick="ag(1)" aria-label="Buka asisten AI">🤖</button>
+ <div id="ag" role="dialog" aria-label="Asisten AI">
+  <div class="ah"><span>Asisten Kopsis</span><span><button class="x" onclick="chReset()">Baru</button> <button class="x" onclick="ag(0)">Tutup</button></span></div>
+  <div id="am"></div>
+  <form class="af" onsubmit="kirim(event)"><input id="ai" placeholder="Tanya atau beri perintah..." autocomplete="off"><button type="button" class="btn ghost" onclick="mic()" aria-label="Bicara">🎤</button><button class="btn">Kirim</button></form>
+ </div>
 </div>
 <div id="t"></div>
 <script>
 // Tempel URL Web App dari Apps Script di sini (Deploy > Manage deployments)
-const API = 'https://script.google.com/macros/s/AKfycbz-DLd3mPn4xTkCeCx274BLVDQO4J0zEaPzPDKbX9hKvIjfanDLx7btavAd7dJJN4Ts/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxChSjHF7PRiGSkcP691kEnWKnPL3LK4GBt36oHth-hcHVEIGs56b71belqR4pgli_n/exec';
 
 const $ = s => document.querySelector(s);
 const rp = n => (n < 0 ? '-' : '') + 'Rp ' + Math.abs(Math.round(+n || 0)).toLocaleString('id-ID');
@@ -294,6 +319,56 @@ function csv(n) {
   const t = [h.join(','), ...D[n].map(r => h.map(k => `"${String(r[k]).replace(/"/g, '""')}"`).join(','))].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([t], { type: 'text/csv' })); a.download = n + '.csv'; a.click();
+}
+// ---------- asisten AI ----------
+let ch = [], busy = false, note = '';
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+const SARAN = ['Ringkasan bulan ini', 'Stok apa yang menipis?', 'Siapa yang masih utang?', 'Catat penjualan 2 pensil tunai'];
+function add(r, t, raw) {
+  const d = document.createElement('div'); d.className = 'b ' + r; d.innerHTML = raw ? t : md(t);
+  $('#am').append(d); $('#am').scrollTop = 1e9; return d;
+}
+function ag(o) {
+  $('#ag').classList.toggle('on', !!o);
+  if (o && !$('#am').children.length) {
+    add('a', 'Halo! Saya bisa menjawab soal stok, penjualan, kas, dan laporan, atau mencatat transaksi (kamu tinggal konfirmasi).');
+    $('#am').insertAdjacentHTML('beforeend', `<div class="chips">${SARAN.map(c => `<button onclick="tanya(this.textContent)">${c}</button>`).join('')}</div>`);
+  }
+  if (o && innerWidth >= 800) $('#ai').focus();
+}
+function chReset() { ch = []; note = ''; $('#am').innerHTML = ''; ag(1); }
+function kirim(e) { e.preventDefault(); const v = $('#ai').value.trim(); if (v) { $('#ai').value = ''; tanya(v); } }
+async function tanya(v) {
+  if (busy) return; busy = true;
+  document.querySelectorAll('.chips').forEach(c => c.remove());
+  add('u', v); ch.push({ role: 'user', content: note + v }); note = '';
+  const d = add('a', '<span class="dot"><span></span><span></span><span></span></span>', 1);
+  try {
+    const j = await (await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'agent', pin, messages: ch.slice(-12) }) })).json();
+    d.remove();
+    if (j.error) { ch.pop(); add('a', j.error); }
+    else { ch.push({ role: 'assistant', content: j.reply || 'Siap.' }); add('a', j.reply || 'Siap.'); (j.proposals || []).forEach(prop); }
+  } catch (e) { d.remove(); ch.pop(); add('a', 'Gagal terhubung. Periksa koneksi lalu coba lagi.'); }
+  busy = false;
+}
+function prop(p) {
+  const d = add('p', `<b>Konfirmasi pencatatan</b><br>${esc(p.label)}<div class="row2"><button class="btn">Ya, catat</button><button class="btn red">Batal</button></div>`, 1);
+  const [y, n] = d.querySelectorAll('button');
+  n.onclick = () => { d.innerHTML = '<span class="mu">Dibatalkan.</span>'; note = '(Catatan sistem: pencatatan "' + p.label + '" dibatalkan pengguna.) '; };
+  y.onclick = async () => {
+    y.disabled = n.disabled = true;
+    const ok = await post({ ...p.payload });
+    d.innerHTML = ok ? 'Tercatat: ' + esc(p.label) : '<span class="neg">Gagal mencatat. Coba lagi.</span>';
+    if (ok) note = '(Catatan sistem: "' + p.label + '" sudah dicatat.) ';
+  };
+}
+function mic() {
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!R) return toast('Browser ini belum mendukung input suara');
+  const r = new R(); r.lang = 'id-ID';
+  r.onresult = e => { $('#ai').value = e.results[0][0].transcript; };
+  r.onerror = () => toast('Suara tidak terbaca'); r.start(); toast('Silakan bicara...');
 }
 if (pin) load();
 </script>
